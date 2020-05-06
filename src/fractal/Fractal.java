@@ -42,7 +42,7 @@ public class Fractal {
         setComplexPlaneRestrictions(commandLine.getOptionValues("rect"));
         setNumberOfThreads(commandLine.getOptionValue("tasks"));
         setOutputFileName(commandLine.getOptionValue("output"));
-        setQuietMode(commandLine.getOptionValue("quiet"));
+        setQuietMode(commandLine);
     }
 
     public void generate() {
@@ -94,10 +94,8 @@ public class Fractal {
         }
     }
 
-    private void setQuietMode(String mode) {
-        if (mode != null) {
-            quietMode = true;
-        }
+    private void setQuietMode(CommandLine commandLine) {
+        quietMode = commandLine.hasOption("quiet");
     }
 
     private void waitThreadsToFinish(Thread[] threads) {
