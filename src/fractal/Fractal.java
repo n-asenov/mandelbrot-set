@@ -1,5 +1,6 @@
 package fractal;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +53,18 @@ public class Fractal {
         Timer timer = new Timer();
         timer.start();
 
+        int maximum = 500;
+        
+        int[] colorPalette = new int[maximum];
+
+        for(int i = 0; i < maximum; i++)
+        {
+            colorPalette[i] = Color.HSBtoRGB(i/256.0f, 1, i/(i+8.0f));
+        }
+        
         for (int threadNumber = 1; threadNumber <= numberOfThreads; threadNumber++) {
             threads[threadNumber - 1] = new Thread(new FractalCalculator(fractalImage, threadNumber, numberOfThreads,
-                    minRealValue, maxRealValue, minImaginaryValue, maxImaginaryValue, quietMode));
+                    minRealValue, maxRealValue, minImaginaryValue, maxImaginaryValue, quietMode, colorPalette));
             threads[threadNumber - 1].start();
         }
 
@@ -109,6 +119,10 @@ public class Fractal {
     }
 
     private void printExecutionTime(Timer timer) {
+        if (!quietMode) {
+            System.out.println("Threads used in current run: " + numberOfThreads);
+        }
+        
         System.out.print("Total execution time for current run: ");
         timer.printResult();
     }

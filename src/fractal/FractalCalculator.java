@@ -16,12 +16,13 @@ public class FractalCalculator implements Runnable {
     private final int threadNumber;
     private final int numberOfThreads;
     private final boolean quietMode;
-
+    private final int[] colorPalette;
+    
     private BufferedImage fractalImage;
     private Timer timer;
 
     public FractalCalculator(BufferedImage fractalImage, int threadNumber, int numberOfThreads, double minRealValue,
-            double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode) {
+            double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode, int[] colorPalette) {
         this.fractalImage = fractalImage;
         this.threadNumber = threadNumber;
         this.numberOfThreads = numberOfThreads;
@@ -32,6 +33,7 @@ public class FractalCalculator implements Runnable {
         this.maxImaginaryValue = maxImaginaryValue;
         imaginaryValuesRange = Math.abs(maxImaginaryValue - minImaginaryValue);
         this.quietMode = quietMode;
+        this.colorPalette = colorPalette;
         timer = new Timer();
     }
 
@@ -42,7 +44,7 @@ public class FractalCalculator implements Runnable {
         final int height = fractalImage.getHeight() - 1;
         final int width = fractalImage.getWidth() - 1;
         final double zoom = 1.2;
-
+        
         double ty = threadNumber / (height * zoom);
 
         for (int i = 0; i < (int) ((height * zoom) / numberOfThreads); i++) {
@@ -56,10 +58,10 @@ public class FractalCalculator implements Runnable {
                 
                 int steps = calculateSteps(new Complex(px, py));
                 
-                if (steps != 500) {
-                    fractalImage.setRGB(px_scr, py_scr, 0xffffff);
+                if (steps != colorPalette.length) {
+                    fractalImage.setRGB(px_scr, py_scr, colorPalette[steps]);
                 } else {
-                    fractalImage.setRGB(px_scr, py_scr, 0x000000);
+                    fractalImage.setRGB(px_scr, py_scr, colorPalette[0]);
                 }
                 
                 tx += 1.0 / (width * zoom);
@@ -88,7 +90,7 @@ public class FractalCalculator implements Runnable {
     }
 
     private int calculateSteps(Complex point) {
-        final int maxSteps = 500;
+        final int maxSteps = colorPalette.length;
         int steps = 0;
 
         Complex currentPoint = new Complex(0.0, 0.0);
