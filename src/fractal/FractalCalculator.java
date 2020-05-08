@@ -17,12 +17,13 @@ public class FractalCalculator implements Runnable {
     private final int numberOfThreads;
     private final boolean quietMode;
     private final int[] colorPalette;
-    
+
     private BufferedImage fractalImage;
     private Timer timer;
 
     public FractalCalculator(BufferedImage fractalImage, int threadNumber, int numberOfThreads, double minRealValue,
-            double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode, int[] colorPalette) {
+            double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode,
+            int[] colorPalette) {
         this.fractalImage = fractalImage;
         this.threadNumber = threadNumber;
         this.numberOfThreads = numberOfThreads;
@@ -44,30 +45,30 @@ public class FractalCalculator implements Runnable {
         final int height = fractalImage.getHeight() - 1;
         final int width = fractalImage.getWidth() - 1;
         final double zoom = 1.2;
-        
-        double ty = threadNumber / (height * zoom);
 
-        for (int i = 0; i < (int) ((height * zoom) / numberOfThreads); i++) {
-            double py = maxImaginaryValue - imaginaryValuesRange * ty;
-            int py_scr = (int)(Math.abs(maxImaginaryValue - py) * (height/ imaginaryValuesRange));
-            
-            double tx = 1.0 / (width * zoom);
-            for (int j = 0; j < (int)(width * zoom); j++) {
-                double px = minRealValue + realValuesRange * tx;
-                int px_scr = (int)((px + maxRealValue) * (width / realValuesRange));
-                
+        double tx = threadNumber / (width * zoom);
+
+        for (int i = 0; i < (int) ((width * zoom) / numberOfThreads); i++) {
+            double px = minRealValue + realValuesRange * tx;
+            int px_scr = (int) ((px + maxRealValue) * (width / realValuesRange));
+
+            double ty = 1.0 / (height * zoom);
+            for (int j = 0; j < (int) (height * zoom); j++) {
+                double py = maxImaginaryValue - imaginaryValuesRange * ty;
+                int py_scr = (int) (Math.abs(maxImaginaryValue - py) * (height / imaginaryValuesRange));
+
                 int steps = calculateSteps(new Complex(px, py));
-                
+
                 if (steps != colorPalette.length) {
                     fractalImage.setRGB(px_scr, py_scr, colorPalette[steps]);
                 } else {
                     fractalImage.setRGB(px_scr, py_scr, colorPalette[0]);
                 }
-                
-                tx += 1.0 / (width * zoom);
+
+                ty += 1.0 / (height * zoom);
             }
-            
-            ty += (1.0 / ((height) * zoom)) * (numberOfThreads);
+
+            tx += (1.0 / ((width) * zoom)) * (numberOfThreads);
         }
 
         stopTimer();
