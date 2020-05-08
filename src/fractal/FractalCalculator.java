@@ -85,7 +85,7 @@ public class FractalCalculator implements Runnable {
         timer.stop();
         if (!quietMode) {
             System.out.println("Thread-" + threadNumber + " stopped.");
-            System.out.println("Thread-" + threadNumber + " execution time: ");
+            System.out.print("Thread-" + threadNumber + " execution time: ");
             timer.printResult();
         }
     }
