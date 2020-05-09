@@ -44,31 +44,17 @@ public class FractalCalculator implements Runnable {
 
         final int height = fractalImage.getHeight() - 1;
         final int width = fractalImage.getWidth() - 1;
-        final double zoom = 1.2;
+           
+        for (int i = threadNumber - 1; i < height; i += numberOfThreads) {
+            double imaginary = (i - height / maxImaginaryValue) * (imaginaryValuesRange / height);
+            
+            for (int j = 0; j < width; j++) {
+                double real = (j - width / maxRealValue) * (realValuesRange / width);
+                
+                int steps = calculateSteps(new Complex(real, imaginary));
 
-        double tx = threadNumber / (width * zoom);
-
-        for (int i = 0; i < (int) ((width * zoom) / numberOfThreads); i++) {
-            double px = minRealValue + realValuesRange * tx;
-            int px_scr = (int) ((px + maxRealValue) * (width / realValuesRange));
-
-            double ty = 1.0 / (height * zoom);
-            for (int j = 0; j < (int) (height * zoom); j++) {
-                double py = maxImaginaryValue - imaginaryValuesRange * ty;
-                int py_scr = (int) (Math.abs(maxImaginaryValue - py) * (height / imaginaryValuesRange));
-
-                int steps = calculateSteps(new Complex(px, py));
-
-                if (steps != colorPalette.length) {
-                    fractalImage.setRGB(px_scr, py_scr, colorPalette[steps]);
-                } else {
-                    fractalImage.setRGB(px_scr, py_scr, colorPalette[0]);
-                }
-
-                ty += 1.0 / (height * zoom);
+                fractalImage.setRGB(j, i, colorPalette[steps % colorPalette.length]);
             }
-
-            tx += (1.0 / ((width) * zoom)) * (numberOfThreads);
         }
 
         stopTimer();
