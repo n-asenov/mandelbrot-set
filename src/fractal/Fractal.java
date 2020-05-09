@@ -53,7 +53,7 @@ public class Fractal {
         int[] colorPalette = generateColorPalette();
 
         int chunksCount = granularity * numberOfThreads;
-        int chunkSize = imageHeight / chunksCount;
+        int chunkSize = (int) Math.ceil((double) imageHeight / chunksCount);
 
         Timer timer = new Timer();
         timer.start();

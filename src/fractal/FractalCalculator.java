@@ -47,7 +47,7 @@ public class FractalCalculator implements Runnable {
 
         for (int chunk = 1; chunk <= chunksCount; chunk++) {
             if (chunk % numberOfThreads == threadNumber) {
-                for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize; i++) {
+                for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize && i < height ; i++) {
                     double imaginary = (i - height / maxImaginaryValue) * (imaginaryValuesRange / height);
 
                     for (int j = 0; j < width; j++) {
