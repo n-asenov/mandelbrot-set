@@ -30,14 +30,12 @@ public class Fractal {
     private double minImaginaryValue = DEFAULT_MIN_IMAGINARY_VALUE;
     private double maxImaginaryValue = DEFAULT_MAX_IMAGINARY_VALUE;
     private int numberOfThreads = DEFAULT_NUMBER_OF_THREADS;
-    // TODO remove
-    //private int granularity = DEFAULT_GRANULARITY;
     private String outputFileName = DEFAULT_OUTPUT_FILE_NAME;
     private boolean quietMode = DEFAULT_QUIET_MODE;
-    
+
     public Fractal() {
     }
-    
+
     public Fractal(CommandLine commandLine) {
         setImageSize(commandLine.getOptionValues("size"));
         setComplexPlaneRestrictions(commandLine.getOptionValues("rect"));
@@ -50,18 +48,17 @@ public class Fractal {
         BufferedImage fractalImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
         Thread[] threads = new Thread[numberOfThreads];
 
+        int maximum = 256;
+
+        int[] colorPalette = new int[maximum];
+
+        for (int i = 0; i < maximum; i++) {
+            colorPalette[i] = Color.HSBtoRGB(i / 256.0f, 1, i / (i + 8.0f));
+        }
+
         Timer timer = new Timer();
         timer.start();
 
-        int maximum = 500;
-        
-        int[] colorPalette = new int[maximum];
-
-        for(int i = 0; i < maximum; i++)
-        {
-            colorPalette[i] = Color.HSBtoRGB(i/256.0f, 1, i/(i+8.0f));
-        }
-        
         for (int threadNumber = 1; threadNumber <= numberOfThreads; threadNumber++) {
             threads[threadNumber - 1] = new Thread(new FractalCalculator(fractalImage, threadNumber, numberOfThreads,
                     minRealValue, maxRealValue, minImaginaryValue, maxImaginaryValue, quietMode, colorPalette));
@@ -122,7 +119,7 @@ public class Fractal {
         if (!quietMode) {
             System.out.println("Threads used in current run: " + numberOfThreads);
         }
-        
+
         System.out.print("Total execution time for current run: ");
         timer.printResult();
     }
