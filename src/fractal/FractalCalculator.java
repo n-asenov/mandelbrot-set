@@ -47,7 +47,7 @@ public class FractalCalculator implements Runnable {
 
         for (int chunk = 1; chunk <= chunksCount; chunk++) {
             if (chunk % numberOfThreads == threadNumber) {
-                for (int i = (chunk - 1) * chunkSize; i < chunkSize; i++) {
+                for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize; i++) {
                     double imaginary = (i - height / maxImaginaryValue) * (imaginaryValuesRange / height);
 
                     for (int j = 0; j < width; j++) {
@@ -58,18 +58,6 @@ public class FractalCalculator implements Runnable {
                         fractalImage.setRGB(j, i, colorPalette[steps % colorPalette.length]);
                     }
                 }
-            }
-        }
-
-        for (int i = threadNumber - 1; i < height; i += numberOfThreads) {
-            double imaginary = (i - height / maxImaginaryValue) * (imaginaryValuesRange / height);
-
-            for (int j = 0; j < width; j++) {
-                double real = (j - width / maxRealValue) * (realValuesRange / width);
-
-                int steps = calculateSteps(new Complex(real, imaginary));
-
-                fractalImage.setRGB(j, i, colorPalette[steps % colorPalette.length]);
             }
         }
 

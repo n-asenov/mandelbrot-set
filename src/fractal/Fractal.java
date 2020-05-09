@@ -58,11 +58,11 @@ public class Fractal {
         Timer timer = new Timer();
         timer.start();
 
-        for (int threadNumber = 1; threadNumber <= numberOfThreads; threadNumber++) {
-            threads[threadNumber - 1] = new Thread(
+        for (int threadNumber = 0; threadNumber < numberOfThreads; threadNumber++) {
+            threads[threadNumber] = new Thread(
                     new FractalCalculator(fractalImage, threadNumber, numberOfThreads, minRealValue, maxRealValue,
                             minImaginaryValue, maxImaginaryValue, quietMode, colorPalette, chunkSize, chunksCount));
-            threads[threadNumber - 1].start();
+            threads[threadNumber].start();
         }
 
         waitThreadsToFinish(threads);
