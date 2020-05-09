@@ -30,16 +30,19 @@ public class Fractal {
     private double minImaginaryValue = DEFAULT_MIN_IMAGINARY_VALUE;
     private double maxImaginaryValue = DEFAULT_MAX_IMAGINARY_VALUE;
     private int numberOfThreads = DEFAULT_NUMBER_OF_THREADS;
+    private int granularity = DEFAULT_GRANULARITY;
     private String outputFileName = DEFAULT_OUTPUT_FILE_NAME;
     private boolean quietMode = DEFAULT_QUIET_MODE;
 
     public Fractal() {
+
     }
 
     public Fractal(CommandLine commandLine) {
         setImageSize(commandLine.getOptionValues("size"));
         setComplexPlaneRestrictions(commandLine.getOptionValues("rect"));
         setNumberOfThreads(commandLine.getOptionValue("tasks"));
+        setGranularity(commandLine.getOptionValue("granularity"));
         setOutputFileName(commandLine.getOptionValue("output"));
         setQuietMode(commandLine);
     }
@@ -47,21 +50,18 @@ public class Fractal {
     public void generate() {
         BufferedImage fractalImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
         Thread[] threads = new Thread[numberOfThreads];
+        int[] colorPalette = generateColorPalette();
 
-        int maximum = 256;
-
-        int[] colorPalette = new int[maximum];
-
-        for (int i = 0; i < maximum; i++) {
-            colorPalette[i] = Color.HSBtoRGB(i / 256.0f, 1, i / (i + 8.0f));
-        }
+        int chunksCount = granularity * numberOfThreads;
+        int chunkSize = imageHeight / chunksCount;
 
         Timer timer = new Timer();
         timer.start();
 
         for (int threadNumber = 1; threadNumber <= numberOfThreads; threadNumber++) {
-            threads[threadNumber - 1] = new Thread(new FractalCalculator(fractalImage, threadNumber, numberOfThreads,
-                    minRealValue, maxRealValue, minImaginaryValue, maxImaginaryValue, quietMode, colorPalette));
+            threads[threadNumber - 1] = new Thread(
+                    new FractalCalculator(fractalImage, threadNumber, numberOfThreads, minRealValue, maxRealValue,
+                            minImaginaryValue, maxImaginaryValue, quietMode, colorPalette, chunkSize, chunksCount));
             threads[threadNumber - 1].start();
         }
 
@@ -95,6 +95,12 @@ public class Fractal {
         }
     }
 
+    private void setGranularity(String granularitySize) {
+        if (granularitySize != null) {
+            granularity = Integer.parseInt(granularitySize);
+        }
+    }
+
     private void setOutputFileName(String name) {
         if (name != null) {
             outputFileName = name;
@@ -103,6 +109,18 @@ public class Fractal {
 
     private void setQuietMode(CommandLine commandLine) {
         quietMode = commandLine.hasOption("quiet");
+    }
+
+    private int[] generateColorPalette() {
+        int maxIterations = 256;
+
+        int[] colorPalette = new int[maxIterations];
+
+        for (int i = 0; i < maxIterations; i++) {
+            colorPalette[i] = Color.HSBtoRGB(i / 256.0f, 1, i / (i + 8.0f));
+        }
+
+        return colorPalette;
     }
 
     private void waitThreadsToFinish(Thread[] threads) {
