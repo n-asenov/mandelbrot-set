@@ -48,7 +48,7 @@ public class Fractal {
     }
 
     public void generate() {
-        BufferedImage fractalImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage fractalImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Thread[] threads = new Thread[numberOfThreads];
         int[] colorPalette = generateColorPalette();
 

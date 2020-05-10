@@ -1,13 +1,16 @@
 package fractal;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 
 import org.apache.commons.math3.complex.Complex;
 
 import timer.Timer;
 
 public class FractalCalculator implements Runnable {
-    private BufferedImage fractalImage;
+    private WritableRaster raster;
+    private ColorModel colorModel;
     private int imageWidth;
     private int imageHeight;
     private int threadNumber;
@@ -26,7 +29,8 @@ public class FractalCalculator implements Runnable {
     public FractalCalculator(BufferedImage fractalImage, int threadNumber, int numberOfThreads, double minRealValue,
             double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode,
             int[] colorPalette, int chunkSize, int chunksCount) {
-        this.fractalImage = fractalImage;
+        this.raster = fractalImage.getRaster();
+        this.colorModel = fractalImage.getColorModel();
         this.imageHeight = fractalImage.getHeight();
         this.imageWidth = fractalImage.getWidth();
         this.threadNumber = threadNumber;
@@ -54,22 +58,7 @@ public class FractalCalculator implements Runnable {
         stopTimer();
     }
 
-    private void startTimer() {
-        if (!quietMode) {
-            timer.start();
-            System.out.println("Thread-" + threadNumber + " started.");
-        }
-    }
-
-    private void stopTimer() {
-        if (!quietMode) {
-            timer.stop();
-            System.out.println("Thread-" + threadNumber + " stopped.");
-            System.out.print("Thread-" + threadNumber + " execution time: ");
-            timer.printResult();
-        }
-    }
-    
+ 
     private void calculateChunk(int chunk) {
         for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize && i < imageHeight; i++) {
             double imaginary = maxImaginaryValue - i * imaginaryValueOffset;
@@ -79,8 +68,8 @@ public class FractalCalculator implements Runnable {
                 double real = j * realValueOffset - maxRealValue;
 
                 int steps = calculateSteps(new Complex(real, imaginary));
-
-                fractalImage.setRGB(j, i, 1, 1, colorPalette, steps % maxSteps, 1);
+                
+                raster.setDataElements(j, i, colorModel.getDataElements(colorPalette[steps % maxSteps], null));
             }
         }
     }
@@ -108,5 +97,21 @@ public class FractalCalculator implements Runnable {
 
     private boolean isOutOfMandelbrotSet(Complex point) {
         return point.isInfinite() || point.isNaN();
+    }
+    
+    private void startTimer() {
+        if (!quietMode) {
+            timer.start();
+            System.out.println("Thread-" + threadNumber + " started.");
+        }
+    }
+
+    private void stopTimer() {
+        if (!quietMode) {
+            timer.stop();
+            System.out.println("Thread-" + threadNumber + " stopped.");
+            System.out.print("Thread-" + threadNumber + " execution time: ");
+            timer.printResult();
+        }
     }
 }
