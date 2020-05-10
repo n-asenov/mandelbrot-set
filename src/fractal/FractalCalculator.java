@@ -7,58 +7,48 @@ import org.apache.commons.math3.complex.Complex;
 import timer.Timer;
 
 public class FractalCalculator implements Runnable {
-    private final double maxRealValue;
-    private final double realValuesRange;
-    private final double maxImaginaryValue;
-    private final double imaginaryValuesRange;
-    private final int threadNumber;
-    private final int numberOfThreads;
-    private final boolean quietMode;
-    private final int[] colorPalette;
-    private final int chunkSize;
-    private final int chunksCount;
-
     private BufferedImage fractalImage;
+    private int imageWidth;
+    private int imageHeight;
+    private int threadNumber;
+    private int numberOfThreads;
+    private int chunksCount;
+    private int chunkSize;
+    private double maxRealValue;
+    private double maxImaginaryValue;
+    private double imaginaryValueOffset;
+    private double realValueOffset;
+    private int[] colorPalette;
+    private int maxSteps;
+    private boolean quietMode;
     private Timer timer;
 
     public FractalCalculator(BufferedImage fractalImage, int threadNumber, int numberOfThreads, double minRealValue,
             double maxRealValue, double minImaginaryValue, double maxImaginaryValue, boolean quietMode,
             int[] colorPalette, int chunkSize, int chunksCount) {
         this.fractalImage = fractalImage;
+        this.imageHeight = fractalImage.getHeight();
+        this.imageWidth = fractalImage.getWidth();
         this.threadNumber = threadNumber;
         this.numberOfThreads = numberOfThreads;
-        this.maxRealValue = maxRealValue;
-        realValuesRange = Math.abs(maxRealValue - minRealValue);
-        this.maxImaginaryValue = maxImaginaryValue;
-        imaginaryValuesRange = Math.abs(maxImaginaryValue - minImaginaryValue);
-        this.quietMode = quietMode;
-        this.colorPalette = colorPalette;
         this.chunkSize = chunkSize;
         this.chunksCount = chunksCount;
-        timer = new Timer();
+        this.colorPalette = colorPalette;
+        this.maxSteps = colorPalette.length;
+        this.maxRealValue = maxRealValue;
+        this.maxImaginaryValue = maxImaginaryValue;
+        this.realValueOffset = (maxRealValue - minRealValue) / imageWidth;
+        this.imaginaryValueOffset = (maxImaginaryValue - minImaginaryValue) / imageHeight;
+        this.quietMode = quietMode;
+        this.timer = new Timer();
     }
 
     @Override
     public void run() {
         startTimer();
 
-        final int height = fractalImage.getHeight();
-        final int width = fractalImage.getWidth();
-
-        for (int chunk = 1; chunk <= chunksCount; chunk++) {
-            if (chunk % numberOfThreads == threadNumber) {
-                for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize && i < height ; i++) {
-                    double imaginary = (i - height / maxImaginaryValue) * (imaginaryValuesRange / height);
-
-                    for (int j = 0; j < width; j++) {
-                        double real = (j - width / maxRealValue) * (realValuesRange / width);
-
-                        int steps = calculateSteps(new Complex(real, imaginary));
-
-                        fractalImage.setRGB(j, i, colorPalette[steps % colorPalette.length]);
-                    }
-                }
-            }
+        for (int chunk = threadNumber + 1; chunk <= chunksCount; chunk += numberOfThreads) {
+            calculateChunk(chunk);
         }
 
         stopTimer();
@@ -79,12 +69,25 @@ public class FractalCalculator implements Runnable {
             timer.printResult();
         }
     }
+    
+    private void calculateChunk(int chunk) {
+        for (int i = (chunk - 1) * chunkSize; i < chunk * chunkSize && i < imageHeight; i++) {
+            double imaginary = maxImaginaryValue - i * imaginaryValueOffset;
+
+            for (int j = 0; j < imageWidth; j++) {
+
+                double real = j * realValueOffset - maxRealValue;
+
+                int steps = calculateSteps(new Complex(real, imaginary));
+
+                fractalImage.setRGB(j, i, 1, 1, colorPalette, steps % maxSteps, 1);
+            }
+        }
+    }
 
     private int calculateSteps(Complex point) {
-        final int maxSteps = colorPalette.length;
-        int steps = 0;
-
         Complex currentPoint = new Complex(0.0, 0.0);
+        int steps = 0;
 
         while (steps < maxSteps) {
             currentPoint = calculateNextPoint(currentPoint, point);
@@ -106,5 +109,4 @@ public class FractalCalculator implements Runnable {
     private boolean isOutOfMandelbrotSet(Complex point) {
         return point.isInfinite() || point.isNaN();
     }
-
 }
